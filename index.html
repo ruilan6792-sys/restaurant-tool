@@ -860,6 +860,64 @@ textarea::placeholder { color: var(--text-dim); }
   </div>
 </div>
 
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal" style="display:none;">
+  <div class="modal" style="max-width:480px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;">
+      <div class="modal-title" style="margin-bottom:0;">设 置</div>
+      <button onclick="closeSettings()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;line-height:1;">×</button>
+    </div>
+
+    <!-- Section 1: Account -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:0.65rem;letter-spacing:0.25em;color:var(--gold);margin-bottom:16px;">账户信息</div>
+      <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);margin-bottom:10px;">
+        <div style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:4px;">当前用户名</div>
+        <div style="font-size:0.9rem;color:var(--text);" id="settingsUsername">—</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);">
+        <div style="font-size:0.7rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:4px;">联系方式</div>
+        <div style="font-size:0.9rem;color:var(--text);" id="settingsContact">—</div>
+      </div>
+    </div>
+
+    <!-- Section 2: Change Password -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:0.65rem;letter-spacing:0.25em;color:var(--gold);margin-bottom:16px;">修改密码</div>
+      <input class="modal-input" type="password" id="oldPass" placeholder="当前密码" />
+      <input class="modal-input" type="password" id="newPass" placeholder="新密码（至少6位）" style="margin-top:10px;" />
+      <input class="modal-input" type="password" id="newPass2" placeholder="确认新密码" style="margin-top:10px;" />
+      <div id="passMsg" style="font-size:0.75rem;margin-top:8px;display:none;"></div>
+      <button onclick="changePassword()" style="width:100%;margin-top:12px;padding:11px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:0.9rem;letter-spacing:0.15em;cursor:pointer;transition:all 0.25s;"
+        onmouseover="this.style.background='var(--gold)';this.style.color='var(--black)'"
+        onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">
+        确认修改
+      </button>
+    </div>
+
+    <!-- Section 3: API Key -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:0.65rem;letter-spacing:0.25em;color:var(--gold);margin-bottom:16px;">API 配置</div>
+      <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:10px;line-height:1.6;">如需使用自己的 API Key，请在此填写。留空则使用默认配置。</div>
+      <input class="modal-input" type="password" id="customApiKey" placeholder="sk-... 或其他格式" />
+      <input class="modal-input" type="text" id="customApiUrl" placeholder="API 接口地址（选填）" style="margin-top:10px;" />
+      <div id="apiMsg" style="font-size:0.75rem;margin-top:8px;display:none;"></div>
+      <button onclick="saveCustomApi()" style="width:100%;margin-top:12px;padding:11px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:0.9rem;letter-spacing:0.15em;cursor:pointer;transition:all 0.25s;"
+        onmouseover="this.style.background='var(--gold)';this.style.color='var(--black)'"
+        onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">
+        保存配置
+      </button>
+    </div>
+
+    <!-- Logout -->
+    <button onclick="clearApiKey()" style="width:100%;padding:11px;background:transparent;border:1px solid rgba(200,57,43,0.4);color:rgba(200,57,43,0.7);font-family:'Noto Sans SC',sans-serif;font-size:0.8rem;letter-spacing:0.1em;cursor:pointer;transition:all 0.25s;"
+      onmouseover="this.style.borderColor='#C8392B';this.style.color='#C8392B'"
+      onmouseout="this.style.borderColor='rgba(200,57,43,0.4)';this.style.color='rgba(200,57,43,0.7)'">
+      退出登录
+    </button>
+  </div>
+</div>
+
 <header>
   <div class="logo">
     <div class="logo-mark"><span>L</span></div>
@@ -909,6 +967,15 @@ textarea::placeholder { color: var(--text-dim); }
       </button>
       <button class="mode-btn" id="mode-image" onclick="setMode('image')">
         <div class="mode-dot"></div> 图片分析
+      </button>
+    </div>
+
+    <!-- Settings button -->
+    <div style="padding:20px; margin-top:auto; border-top:1px solid var(--border);">
+      <button onclick="openSettings()" style="width:100%; padding:11px 14px; background:transparent; border:1px solid var(--border); color:var(--text-dim); font-family:'Noto Sans SC',sans-serif; font-size:0.78rem; text-align:left; cursor:pointer; transition:all 0.25s; display:flex; align-items:center; gap:10px; letter-spacing:0.08em;"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold-light)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">
+        <span>⚙</span> 设 置
       </button>
     </div>
   </div>
@@ -1034,6 +1101,77 @@ let uploadedImageBase64 = null;
 let isLoading = false;
 let conversationHistory = [];
 
+// ========= SETTINGS =========
+function openSettings() {
+  const user = localStorage.getItem('lumina_user') || '';
+  document.getElementById('settingsUsername').textContent = user || '—';
+  const allUsers = JSON.parse(localStorage.getItem('lumina_users') || '{}');
+  const contact = allUsers[user]?.contact || '默认账户';
+  document.getElementById('settingsContact').textContent = contact;
+  // Load custom API if saved
+  const customKey = localStorage.getItem('lumina_custom_key') || '';
+  const customUrl = localStorage.getItem('lumina_custom_url') || '';
+  if (customKey) document.getElementById('customApiKey').value = customKey;
+  if (customUrl) document.getElementById('customApiUrl').value = customUrl;
+  document.getElementById('settingsModal').style.display = 'flex';
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').style.display = 'none';
+}
+
+function changePassword() {
+  const user = localStorage.getItem('lumina_user') || '';
+  const oldP = document.getElementById('oldPass').value;
+  const newP = document.getElementById('newPass').value;
+  const newP2 = document.getElementById('newPass2').value;
+  const msg = document.getElementById('passMsg');
+
+  if (!oldP || !newP || !newP2) {
+    msg.style.color='#C8392B'; msg.textContent='请填写完整'; msg.style.display='block'; return;
+  }
+  if (newP.length < 6) {
+    msg.style.color='#C8392B'; msg.textContent='新密码至少6位'; msg.style.display='block'; return;
+  }
+  if (newP !== newP2) {
+    msg.style.color='#C8392B'; msg.textContent='两次密码不一致'; msg.style.display='block'; return;
+  }
+
+  const allUsers = JSON.parse(localStorage.getItem('lumina_users') || '{}');
+  const currentPass = allUsers[user]?.pass || USERS[user];
+  if (oldP !== currentPass) {
+    msg.style.color='#C8392B'; msg.textContent='当前密码错误'; msg.style.display='block'; return;
+  }
+
+  // Update password
+  if (allUsers[user]) allUsers[user].pass = newP;
+  USERS[user] = newP;
+  localStorage.setItem('lumina_users', JSON.stringify(allUsers));
+
+  msg.style.color='var(--gold)'; msg.textContent='✓ 密码修改成功';
+  msg.style.display='block';
+  document.getElementById('oldPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('newPass2').value = '';
+}
+
+function saveCustomApi() {
+  const key = document.getElementById('customApiKey').value.trim();
+  const url = document.getElementById('customApiUrl').value.trim();
+  const msg = document.getElementById('apiMsg');
+
+  if (key) {
+    apiKey = key;
+    localStorage.setItem('lumina_custom_key', key);
+  }
+  if (url) {
+    localStorage.setItem('lumina_custom_url', url);
+  }
+  msg.style.color='var(--gold)'; msg.textContent='✓ 配置已保存，即刻生效';
+  msg.style.display='block';
+  setTimeout(() => msg.style.display='none', 2000);
+}
+
 // ========= AUTH CONFIG =========
 // 在这里设置你的 API Key（用户看不到）
 const BACKEND_API_KEY = 'sk-wZJh3G52cp8RE07Axe2mgKiZwqi2jXI1ZEu6kKW6eEXrZv2R';
@@ -1145,6 +1283,9 @@ window.onload = () => {
   // Load previously registered users
   const savedAllUsers = JSON.parse(localStorage.getItem('lumina_users') || '{}');
   Object.keys(savedAllUsers).forEach(u => { USERS[u] = savedAllUsers[u].pass; });
+  // Load custom API key if set
+  const customKey = localStorage.getItem('lumina_custom_key');
+  if (customKey) apiKey = customKey;
 
   const savedUser = localStorage.getItem('lumina_user');
   if (savedUser && USERS[savedUser]) {
