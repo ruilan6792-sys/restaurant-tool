@@ -1318,15 +1318,14 @@ async function generateImage() {
   const prompt = document.getElementById('imgPrompt').value.trim();
   if (!prompt) { alert('请描述您想生成的画面内容'); return; }
 
-  const style = document.querySelector('.style-chip.active')?.dataset.style || '高端商业摄影';
-  const scene = document.getElementById('imgScene').value;
-
-  // Image content moderation
   const imgSensitive = ['血腥','暴力','裸体','色情','尸体','死亡','枪','刀','武器','恐怖'];
   if (imgSensitive.some(kw => prompt.includes(kw))) {
     alert('图片描述包含不适内容，请重新描述。');
     return;
   }
+
+  const style = document.querySelector('.style-chip.active')?.dataset.style || '高端商业摄影';
+  const scene = document.getElementById('imgScene').value;
 
   const btn = document.getElementById('genImgBtn');
   btn.disabled = true;
@@ -1336,51 +1335,46 @@ async function generateImage() {
   resultArea.innerHTML = `
     <div class="loading-overlay">
       <div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-      <div class="loading-text">正在生成图片描述...</div>
+      <div class="loading-text">正在生成图片...</div>
     </div>
   `;
 
-  // Since direct image generation isn't available via Claude API,
-  // we generate a detailed prompt and show it
+  // Build English prompt for better image quality
+  const fullPrompt = `${prompt}, ${style} style, for ${scene}, ultra high quality, professional commercial photography, luxury, elegant`;
+
   try {
-    const response = await fetch('https://api.geeknow.top/v1/chat/completions', {
+    const response = await fetch('https://api.geeknow.top/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: `你是一位专业的商业摄影指导师。
-
-请根据以下需求，生成一段专业的图片创作指南（中文），帮助摄影师或设计师创作出完美的商业图片：
-
-内容：${prompt}
-风格：${style}
-用途：${scene}
-
-请从以下角度给出具体指导：
-1. 构图建议（具体角度、景深、比例）
-2. 光线设置（光源方向、色温、氛围）
-3. 色彩方案（主色调、辅助色、对比关系）
-4. 道具与背景（具体物品、材质、细节）
-5. 后期处理风格（滤镜方向、调色建议）
-
-语言精致专业，每点30字以内。`
-          }]
+        model: 'dall-e-3',
+        prompt: fullPrompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard'
       })
     });
 
     const data = await response.json();
-    const guide = data.choices?.[0]?.message?.content || '';
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || `错误 ${response.status}`);
+    }
+
+    const imageUrl = data.data?.[0]?.url;
+    if (!imageUrl) throw new Error('未能获取图片地址');
 
     resultArea.innerHTML = `
-      <div style="padding:16px;font-size:0.75rem;line-height:1.8;color:var(--text);overflow-y:auto;max-height:220px;">
-        <div style="font-size:0.65rem;letter-spacing:0.2em;color:var(--gold);margin-bottom:10px;">创作指南</div>
-        ${guide.replace(/\n/g, '<br>')}
+      <div style="position:relative; width:100%;">
+        <img src="${imageUrl}" style="width:100%; display:block; border:1px solid var(--border);" alt="生成图片">
+        <a href="${imageUrl}" download="lumina-image.png" target="_blank"
+          style="position:absolute; bottom:8px; right:8px; padding:5px 12px; background:rgba(10,10,10,0.8);
+          border:1px solid var(--gold); color:var(--gold); font-size:0.7rem; text-decoration:none; letter-spacing:0.1em;">
+          下载图片
+        </a>
       </div>
     `;
 
