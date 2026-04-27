@@ -876,12 +876,12 @@ textarea::placeholder { color: var(--text-dim); }
         <div class="welcome-title">您好，<em>欢迎使用</em> LUMINA</div>
         <div class="welcome-sub">专为高端体验型商家打造的 AI 内容创作助手</div>
         <div class="welcome-cards">
-          <div class="welcome-card" onclick="quickPrompt('请帮我写一段高端餐厅的品牌故事')">
+          <div class="welcome-card" onclick="quickPrompt('', 'brand')">
             <div class="welcome-card-icon">✦</div>
             <div class="welcome-card-title">品牌故事</div>
             <div class="welcome-card-desc">打造有温度、有底蕴的品牌叙事</div>
           </div>
-          <div class="welcome-card" onclick="quickPrompt('请帮我写一篇露营基地的宣传文案')">
+          <div class="welcome-card" onclick="quickPrompt('', 'camp')">
             <div class="welcome-card-icon">◈</div>
             <div class="welcome-card-title">场景文案</div>
             <div class="welcome-card-desc">餐厅、露营、民宿的沉浸式描述</div>
@@ -1055,11 +1055,16 @@ function removeImage() {
   document.getElementById('fileInput').value = '';
 }
 
-function quickPrompt(text) {
+let currentRole = '';
+
+function quickPrompt(text, role = '') {
+  currentRole = role;
+  // Hide welcome, show empty chat ready for input
+  const w = document.getElementById('welcome');
+  if (w) w.style.display = 'none';
   const input = document.getElementById('userInput');
-  input.value = text;
+  input.value = '';
   input.focus();
-  autoResize(input);
 }
 
 function hideWelcome() {
@@ -1162,7 +1167,18 @@ async function send() {
     return;
   }
 
+  const rolePrompts = {
+    'brand': '你现在是一位资深品牌文案师，专精高端餐饮品牌叙事，语言有文学性和情感温度。',
+    'dish': '你现在是一位米其林餐厅的菜品描述师，擅长用诗意语言激发食欲，每道菜都有故事。',
+    'camp': '你现在是一位高端露营基地的品牌策划师，擅长自然、治愈、野奢风格的文案创作。',
+    'wechat': '你现在是一位高端品牌的社交媒体运营，擅长写有格调、有传播力的朋友圈文案。',
+    'menu': '你现在是一位高端餐厅的菜单设计师，擅长设计有仪式感、有美感的菜单文字排版。',
+    'vip': '你现在是一位高端品牌的客户关系总监，擅长写正式优雅、有品质感的VIP邀请函。',
+  };
+  const extraRole = currentRole && rolePrompts[currentRole] ? rolePrompts[currentRole] : '';
+
   const systemPrompt = `你是 LUMINA，专为中国高端体验型商家（精品餐饮、露营基地、精品民宿、高端茶馆等）设计的AI内容助手。
+${extraRole}
 
 你的风格：
 - 语言精致、有文化底蕴，符合高端品牌调性
