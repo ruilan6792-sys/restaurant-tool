@@ -977,6 +977,18 @@ textarea::placeholder { color: var(--text-dim); }
       <div class="result-area" id="resultArea">
         <div class="result-placeholder" id="resultPlaceholder">图片将在此展示</div>
       </div>
+
+      <div style="margin-top:8px; padding-top:16px; border-top:1px solid var(--border);">
+        <div class="field-label">快速生成</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+          <div class="style-chip" onclick="fillImgPrompt('精致餐厅夜景，烛光氛围，高端奢华')">餐厅夜景</div>
+          <div class="style-chip" onclick="fillImgPrompt('露营基地星空帐篷，自然野奢，治愈系')">露营星空</div>
+          <div class="style-chip" onclick="fillImgPrompt('精品民宿庭院，晨光，禅意东方美学')">民宿晨光</div>
+          <div class="style-chip" onclick="fillImgPrompt('高端茶室，茶器特写，极简日式风格')">茶室茶器</div>
+          <div class="style-chip" onclick="fillImgPrompt('高端菜品摆盘，米其林风格，白瓷器皿')">菜品摆盘</div>
+          <div class="style-chip" onclick="fillImgPrompt('户外私宴场景，长桌，蜡烛，山景')">户外私宴</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1077,6 +1089,36 @@ function removeImage() {
 }
 
 let currentRole = '';
+
+function fillImgPrompt(text) {
+  const input = document.getElementById('imgPrompt');
+  input.value = text;
+  input.focus();
+  // Scroll to gen button
+  document.getElementById('genImgBtn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openImageGen(el) {
+  // Highlight button
+  document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  // Hide welcome
+  const w = document.getElementById('welcome');
+  if (w) w.style.display = 'none';
+  // Show title
+  const bar = document.getElementById('chatTitleBar');
+  const titleText = document.getElementById('chatTitleText');
+  titleText.textContent = '◈ 文字生成图片';
+  bar.style.display = 'block';
+  // Focus right panel
+  const imgPrompt = document.getElementById('imgPrompt');
+  imgPrompt.focus();
+  // Animate right panel
+  const panel = document.querySelector('.right-panel');
+  panel.style.transition = 'box-shadow 0.3s';
+  panel.style.boxShadow = '0 0 0 1px var(--gold), inset 0 0 30px rgba(201,169,110,0.05)';
+  setTimeout(() => { panel.style.boxShadow = ''; }, 1500);
+}
 
 function quickPrompt(text, role = '', el = null) {
   currentRole = role;
