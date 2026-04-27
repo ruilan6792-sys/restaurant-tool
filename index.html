@@ -1166,7 +1166,7 @@ async function send() {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-3.5-turbo',
         max_tokens: 1500,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -1228,7 +1228,7 @@ async function generateImage() {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-3.5-turbo',
         max_tokens: 800,
         messages: [{
           role: 'user',
