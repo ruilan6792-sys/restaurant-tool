@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>餐饮文案助手</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C8392B;
+    --red-dark: #9B2B1F;
+    --gold: #D4A844;
+    --cream: #FAF6EE;
+    --ink: #1A1208;
+    --ink-light: #5C4A2A;
+    --paper: #F5EDD8;
+    --border: #D4A844;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at 20% 10%, rgba(200,57,43,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(212,168,68,0.08) 0%, transparent 50%);
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  .header-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .ornament-line {
+    height: 1px;
+    width: 60px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .ornament-line.right {
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  .ornament-diamond {
+    width: 8px;
+    height: 8px;
+    background: var(--gold);
+    transform: rotate(45deg);
+  }
+
+  h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--red);
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    letter-spacing: 0.15em;
+  }
+
+  /* Card */
+  .card {
+    background: white;
+    border: 1px solid rgba(212,168,68,0.3);
+    border-radius: 4px;
+    padding: 36px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 24px rgba(26,18,8,0.06), 0 1px 4px rgba(26,18,8,0.04);
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 6px; right: -6px; bottom: -6px;
+    border: 1px solid rgba(212,168,68,0.15);
+    border-radius: 4px;
+    z-index: -1;
+  }
+
+  .card-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 16px;
+    background: var(--red);
+    border-radius: 2px;
+  }
+
+  /* Form */
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    margin-top: 20px;
+  }
+
+  label:first-of-type { margin-top: 0; }
+
+  input, textarea, select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(212,168,68,0.4);
+    border-radius: 3px;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(200,57,43,0.08);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.6;
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235C4A2A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+  }
+
+  /* Style chips */
+  .style-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .chip {
+    padding: 7px 16px;
+    border: 1px solid rgba(212,168,68,0.4);
+    border-radius: 20px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ink-light);
+    background: var(--cream);
+    user-select: none;
+  }
+
+  .chip:hover { border-color: var(--red); color: var(--red); }
+
+  .chip.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--red);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:hover {
+    background: var(--red-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(200,57,43,0.3);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  /* Loading */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Result */
+  .result-card {
+    display: none;
+    background: white;
+    border: 1px solid rgba(212,168,68,0.3);
+    border-radius: 4px;
+    padding: 36px;
+    box-shadow: 0 4px 24px rgba(26,18,8,0.06);
+    animation: fadeUp 0.4s ease;
+    position: relative;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 6px; right: -6px; bottom: -6px;
+    border: 1px solid rgba(212,168,68,0.15);
+    border-radius: 4px;
+    z-index: -1;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .result-label {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .result-label::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 16px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+
+  .copy-btn {
+    padding: 6px 16px;
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--gold);
+    font-size: 0.78rem;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover {
+    background: var(--gold);
+    color: white;
+  }
+
+  .result-text {
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--ink);
+    white-space: pre-wrap;
+    padding: 20px;
+    background: var(--cream);
+    border-radius: 3px;
+    border-left: 3px solid var(--red);
+  }
+
+  .regen-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid rgba(200,57,43,0.3);
+    border-radius: 3px;
+    color: var(--red);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.08em;
+  }
+
+  .regen-btn:hover {
+    background: rgba(200,57,43,0.05);
+    border-color: var(--red);
+  }
+
+  /* Error */
+  .error-msg {
+    display: none;
+    padding: 14px 18px;
+    background: rgba(200,57,43,0.06);
+    border: 1px solid rgba(200,57,43,0.2);
+    border-radius: 3px;
+    color: var(--red);
+    font-size: 0.85rem;
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(212,168,68,0.2);
+  }
+
+  .footer-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .footer-line {
+    height: 1px;
+    width: 40px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .footer-line.right {
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  footer p {
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .container { padding: 28px 16px 48px; }
+    h1 { font-size: 1.6rem; }
+    .card, .result-card { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-ornament">
+      <div class="ornament-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="ornament-line right"></div>
+    </div>
+    <h1>餐饮文案助手</h1>
+    <p class="subtitle">输入信息 · 一键生成朋友圈文案</p>
+  </header>
+
+  <div class="card">
+    <div class="card-title">填写店铺信息</div>
+
+    <label>店铺名称</label>
+    <input type="text" id="shopName" placeholder="例如：老王家烤鱼" maxlength="30">
+
+    <label>今天主推什么？</label>
+    <input type="text" id="dish" placeholder="例如：招牌红烧肉、新品抹茶蛋糕、买一送一活动" maxlength="60">
+
+    <label>有什么特别想说的？（可选）</label>
+    <textarea id="extra" placeholder="例如：食材今天刚到、限量20份、适合家庭聚餐..." maxlength="100"></textarea>
+
+    <label>文案风格</label>
+    <div class="style-chips">
+      <div class="chip active" data-style="温暖走心">温暖走心</div>
+      <div class="chip" data-style="活泼有趣">活泼有趣</div>
+      <div class="chip" data-style="食欲诱人">食欲诱人</div>
+      <div class="chip" data-style="简洁干练">简洁干练</div>
+      <div class="chip" data-style="节日氛围">节日氛围</div>
+    </div>
+
+    <button class="btn" id="generateBtn" onclick="generate()">
+      <div class="btn-inner">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">✦ 生成文案</span>
+      </div>
+    </button>
+
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="result-label">生成结果</div>
+      <button class="copy-btn" onclick="copyText()">复制文案</button>
+    </div>
+    <div class="result-text" id="resultText"></div>
+    <button class="regen-btn" onclick="generate()">↻ 换一个版本</button>
+  </div>
+
+  <footer>
+    <div class="footer-ornament">
+      <div class="footer-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="footer-line right"></div>
+    </div>
+    <p>AI 驱动 · 专为餐饮实体店设计</p>
+  </footer>
+</div>
+
+<script>
+  // Style chip selection
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  function getSelectedStyle() {
+    const active = document.querySelector('.chip.active');
+    return active ? active.dataset.style : '温暖走心';
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('generateBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = loading;
+    spinner.style.display = loading ? 'block' : 'none';
+    btnText.textContent = loading ? '正在生成...' : '✦ 生成文案';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+
+  async function generate() {
+    const shopName = document.getElementById('shopName').value.trim();
+    const dish = document.getElementById('dish').value.trim();
+    const extra = document.getElementById('extra').value.trim();
+    const style = getSelectedStyle();
+
+    if (!shopName) { showError('请填写店铺名称'); return; }
+    if (!dish) { showError('请填写今天主推的内容'); return; }
+
+    hideError();
+    setLoading(true);
+    document.getElementById('resultCard').style.display = 'none';
+
+    const prompt = `你是一位专业的餐饮营销文案师，擅长写微信朋友圈推广文案。
+
+请根据以下信息，写一条朋友圈文案：
+- 店铺名称：${shopName}
+- 今日主推：${dish}
+- 补充信息：${extra || '无'}
+- 文案风格：${style}
+
+要求：
+1. 长度适中，100~180字之间
+2. 带2~4个相关emoji，自然融入文案
+3. 结尾加1~2个相关话题标签（#格式）
+4. 让人看了有食欲或想来消费
+5. 直接输出文案内容，不要任何解释或前言`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+
+      if (!response.ok) throw new Error(`请求失败 (${response.status})`);
+
+      const data = await response.json();
+      const text = data.content?.map(b => b.text || '').join('') || '';
+
+      if (!text) throw new Error('生成内容为空，请重试');
+
+      document.getElementById('resultText').textContent = text;
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    } catch (err) {
+      showError('生成失败：' + err.message + '。请检查网络后重试。');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function copyText() {
+    const text = document.getElementById('resultText').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = '✓ 已复制';
+      btn.style.background = 'var(--gold)';
+      btn.style.color = 'white';
+      setTimeout(() => {
+        btn.textContent = '复制文案';
+        btn.style.background = '';
+        btn.style.color = '';
+      }, 2000);
+    } catch {
+      showError('复制失败，请手动选中文字复制');
+    }
+  }
+</script>
+</body>
+</html>
