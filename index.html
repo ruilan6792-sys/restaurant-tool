@@ -882,7 +882,10 @@ textarea::placeholder { color: var(--text-dim); }
 
   <!-- Chat area -->
   <div class="chat-area">
-    <div class="messages" id="messages">
+    <div class="chat-title-bar" id="chatTitleBar" style="display:none; padding:12px 32px; border-bottom:1px solid var(--border); background:rgba(201,169,110,0.06);">
+  <span style="font-family:'Cormorant Garamond',serif; font-size:0.85rem; color:var(--gold); letter-spacing:0.2em;" id="chatTitleText"></span>
+</div>
+<div class="messages" id="messages">
       <div class="welcome" id="welcome">
         <div class="welcome-title">您好，<em>欢迎使用</em> LUMINA</div>
         <div class="welcome-sub">专为高端体验型商家打造的 AI 内容创作助手</div>
@@ -1042,6 +1045,13 @@ function setMode(mode) {
     image: '上传图片后，描述您想了解的内容...'
   };
   document.getElementById('userInput').placeholder = placeholders[mode];
+  // Show title bar for mode
+  const bar = document.getElementById('chatTitleBar');
+  const titleText = document.getElementById('chatTitleText');
+  const w = document.getElementById('welcome');
+  if (w && w.style.display !== 'none') return;
+  titleText.textContent = '◎ ' + labels[mode];
+  bar.style.display = 'block';
 }
 
 function handleImage(e) {
@@ -1079,6 +1089,21 @@ function quickPrompt(text, role = '', el = null) {
   const input = document.getElementById('userInput');
   input.value = '';
   input.focus();
+  // Show title bar
+  const titleNames = {
+    brand: '✦ 品牌故事',
+    dish: '✦ 菜品描述',
+    camp: '✦ 露营文案',
+    wechat: '✦ 朋友圈文案',
+    menu: '✦ 菜单设计',
+    vip: '✦ VIP邀请函',
+  };
+  const bar = document.getElementById('chatTitleBar');
+  const titleText = document.getElementById('chatTitleText');
+  if (role && titleNames[role]) {
+    titleText.textContent = titleNames[role];
+    bar.style.display = 'block';
+  }
 }
 
 function hideWelcome() {
