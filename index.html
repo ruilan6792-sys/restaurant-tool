@@ -838,22 +838,22 @@ textarea::placeholder { color: var(--text-dim); }
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">快捷指令</div>
-      <button class="quick-btn" onclick="quickPrompt('请帮我写一段高端餐厅的品牌故事，300字左右，要有文化底蕴和情感温度')">
+      <button class="quick-btn" onclick="quickPrompt('请帮我写一段高端餐厅的品牌故事，300字左右，要有文化底蕴和情感温度', 'brand')">
         <span class="icon">✦</span> 品牌故事
       </button>
-      <button class="quick-btn" onclick="quickPrompt('请帮我写5道菜品的精致描述，要让客人读了就有食欲，语言要有诗意')">
+      <button class="quick-btn" onclick="quickPrompt('请帮我写5道菜品的精致描述，要让客人读了就有食欲，语言要有诗意', 'dish')">
         <span class="icon">✦</span> 菜品描述
       </button>
-      <button class="quick-btn" onclick="quickPrompt('请帮我写一篇露营基地的宣传文案，突出自然、治愈、高端感，500字')">
+      <button class="quick-btn" onclick="quickPrompt('请帮我写一篇露营基地的宣传文案，突出自然、治愈、高端感，500字', 'camp')">
         <span class="icon">✦</span> 露营文案
       </button>
-      <button class="quick-btn" onclick="quickPrompt('请帮我写一段朋友圈推广文案，适合高端餐饮，有格调，带话题标签')">
+      <button class="quick-btn" onclick="quickPrompt('请帮我写一段朋友圈推广文案，适合高端餐饮，有格调，带话题标签', 'wechat')">
         <span class="icon">✦</span> 朋友圈文案
       </button>
-      <button class="quick-btn" onclick="quickPrompt('请帮我设计一份高端私宴菜单的文字排版方案，要有仪式感')">
+      <button class="quick-btn" onclick="quickPrompt('请帮我设计一份高端私宴菜单的文字排版方案，要有仪式感', 'menu')">
         <span class="icon">✦</span> 菜单设计
       </button>
-      <button class="quick-btn" onclick="quickPrompt('请帮我写一封给VIP客户的活动邀请函，正式优雅，有品质感')">
+      <button class="quick-btn" onclick="quickPrompt('请帮我写一封给VIP客户的活动邀请函，正式优雅，有品质感', 'vip')">
         <span class="icon">✦</span> VIP邀请函
       </button>
     </div>
@@ -1055,11 +1055,79 @@ function removeImage() {
   document.getElementById('fileInput').value = '';
 }
 
-function quickPrompt(text) {
-  const input = document.getElementById('userInput');
-  input.value = text;
-  input.focus();
-  autoResize(input);
+async function quickPrompt(text, role = '') {
+  if (isLoading) return;
+  if (!apiKey) { document.getElementById('apiModal').style.display = 'flex'; return; }
+
+  // Hide welcome screen
+  const w = document.getElementById('welcome');
+  if (w) w.style.display = 'none';
+
+  // Build role-specific system prompt
+  const rolePrompts = {
+    'brand': '你现在是一位资深品牌文案师，专精高端餐饮品牌叙事，语言有文学性和情感温度。',
+    'dish': '你现在是一位米其林餐厅的菜品描述师，擅长用诗意语言激发食欲，每道菜都有故事。',
+    'camp': '你现在是一位高端露营基地的品牌策划师，擅长自然、治愈、野奢风格的文案创作。',
+    'wechat': '你现在是一位高端品牌的社交媒体运营，擅长写有格调、有传播力的朋友圈文案。',
+    'menu': '你现在是一位高端餐厅的菜单设计师，擅长设计有仪式感、有美感的菜单文字排版。',
+    'vip': '你现在是一位高端品牌的客户关系总监，擅长写正式优雅、有品质感的VIP邀请函。',
+  };
+
+  const extraSystem = role && rolePrompts[role] ? rolePrompts[role] : '';
+
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  // Add only AI typing indicator, no user message shown
+  addTyping();
+
+  const systemPrompt = `你是 LUMINA，专为中国高端体验型商家（精品餐饮、露营基地、精品民宿、高端茶馆等）设计的AI内容助手。
+${extraSystem}
+
+你的风格：
+- 语言精致、有文化底蕴，符合高端品牌调性
+- 实用且有创意，能直接被客户使用
+- 了解中国高端消费市场的审美与需求
+- 擅长品牌故事、菜品文案、场景描述、营销策划
+
+严格限制：
+- 拒绝回答任何政治、色情、暴力、血腥、违法内容
+- 只专注于商业内容创作，其他话题一律礼貌拒绝
+
+回答时直接给出高质量内容，不要过多解释。如果是文案类需求，直接输出成品文案。`;
+
+  try {
+    const response = await fetch('https://api.geeknow.top/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        max_tokens: 1500,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error?.message || `错误 ${response.status}`);
+    const reply = data.choices?.[0]?.message?.content || '';
+    conversationHistory.push({ role: 'user', content: text });
+    conversationHistory.push({ role: 'assistant', content: reply });
+    removeTyping();
+    addMessage('assistant', reply);
+
+  } catch (err) {
+    removeTyping();
+    addMessage('assistant', `出现错误：${err.message}`);
+  } finally {
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
 }
 
 function hideWelcome() {
