@@ -838,7 +838,7 @@ textarea::placeholder { color: var(--text-dim); }
 
     <!-- Login form -->
     <div id="formLogin">
-      <input class="modal-input" type="text" id="loginUser" placeholder="用户名" />
+      <input class="modal-input" type="text" id="loginUser" placeholder="用户名或手机号" />
       <input class="modal-input" type="password" id="loginPass" placeholder="密码" style="margin-top:10px;" />
       <div id="loginError" style="color:#C8392B; font-size:0.75rem; margin-top:8px; display:none;"></div>
       <button class="modal-btn" onclick="doLogin()" style="margin-top:16px;">登 录</button>
@@ -1056,16 +1056,32 @@ function switchTab(tab) {
 }
 
 function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
+  const input = document.getElementById('loginUser').value.trim();
   const pass = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
-  if (!user || !pass) { err.textContent = '请填写用户名和密码'; err.style.display='block'; return; }
-  if (USERS[user] && USERS[user] === pass) {
+  if (!input || !pass) { err.textContent = '请填写账号和密码'; err.style.display='block'; return; }
+
+  // Try match by username directly
+  let matchedUser = null;
+  if (USERS[input] && USERS[input] === pass) {
+    matchedUser = input;
+  } else {
+    // Try match by phone/email from saved users
+    const allUsers = JSON.parse(localStorage.getItem('lumina_users') || '{}');
+    for (const [u, info] of Object.entries(allUsers)) {
+      if (info.contact === input && info.pass === pass) {
+        matchedUser = u;
+        break;
+      }
+    }
+  }
+
+  if (matchedUser) {
     apiKey = BACKEND_API_KEY;
-    localStorage.setItem('lumina_user', user);
+    localStorage.setItem('lumina_user', matchedUser);
     document.getElementById('apiModal').style.display = 'none';
   } else {
-    err.textContent = '用户名或密码错误，请联系管理员';
+    err.textContent = '账号或密码错误';
     err.style.display = 'block';
   }
 }
