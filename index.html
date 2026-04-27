@@ -847,9 +847,10 @@ textarea::placeholder { color: var(--text-dim); }
     <!-- Register form -->
     <div id="formRegister" style="display:none;">
       <input class="modal-input" type="text" id="regUser" placeholder="用户名" />
+      <input class="modal-input" type="text" id="regContact" placeholder="手机号或邮箱" style="margin-top:10px;" />
       <input class="modal-input" type="password" id="regPass" placeholder="密码" style="margin-top:10px;" />
       <input class="modal-input" type="password" id="regPass2" placeholder="确认密码" style="margin-top:10px;" />
-      <div id="regError" style="color:#C8392B; font-size:0.75rem; margin-top:8px; display:none;"></div>
+      <div id="regError" style="font-size:0.75rem; margin-top:8px; display:none;"></div>
       <button class="modal-btn" onclick="doRegister()" style="margin-top:16px;">注 册</button>
     </div>
 
@@ -1071,20 +1072,58 @@ function doLogin() {
 
 function doRegister() {
   const user = document.getElementById('regUser').value.trim();
+  const contact = document.getElementById('regContact').value.trim();
   const pass = document.getElementById('regPass').value;
   const pass2 = document.getElementById('regPass2').value;
   const err = document.getElementById('regError');
-  if (!user || !pass) { err.textContent = '请填写完整信息'; err.style.display='block'; return; }
-  if (pass !== pass2) { err.textContent = '两次密码不一致'; err.style.display='block'; return; }
-  if (USERS[user]) { err.textContent = '用户名已存在'; err.style.display='block'; return; }
-  // Registration requires admin approval - just show message
-  err.style.color = 'var(--gold)';
-  err.textContent = '注册申请已提交，请等待管理员审核后登录';
-  err.style.display = 'block';
+
+  if (!user || !contact || !pass) {
+    err.style.color = '#C8392B';
+    err.textContent = '请填写完整信息';
+    err.style.display = 'block'; return;
+  }
+  // Validate contact (phone or email)
+  const isPhone = /^1[3-9]\d{9}$/.test(contact);
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+  if (!isPhone && !isEmail) {
+    err.style.color = '#C8392B';
+    err.textContent = '请输入正确的手机号或邮箱';
+    err.style.display = 'block'; return;
+  }
+  if (pass !== pass2) {
+    err.style.color = '#C8392B';
+    err.textContent = '两次密码不一致';
+    err.style.display = 'block'; return;
+  }
+  if (pass.length < 6) {
+    err.style.color = '#C8392B';
+    err.textContent = '密码至少6位';
+    err.style.display = 'block'; return;
+  }
+  if (USERS[user]) {
+    err.style.color = '#C8392B';
+    err.textContent = '用户名已被注册';
+    err.style.display = 'block'; return;
+  }
+
+  // Auto register - save to localStorage
+  USERS[user] = pass;
+  const allUsers = JSON.parse(localStorage.getItem('lumina_users') || '{}');
+  allUsers[user] = { pass, contact, createdAt: new Date().toLocaleString() };
+  localStorage.setItem('lumina_users', JSON.stringify(allUsers));
+
+  // Auto login
+  apiKey = BACKEND_API_KEY;
+  localStorage.setItem('lumina_user', user);
+  document.getElementById('apiModal').style.display = 'none';
 }
 
 // Init
 window.onload = () => {
+  // Load previously registered users
+  const savedAllUsers = JSON.parse(localStorage.getItem('lumina_users') || '{}');
+  Object.keys(savedAllUsers).forEach(u => { USERS[u] = savedAllUsers[u].pass; });
+
   const savedUser = localStorage.getItem('lumina_user');
   if (savedUser && USERS[savedUser]) {
     apiKey = BACKEND_API_KEY;
