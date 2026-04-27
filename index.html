@@ -1002,8 +1002,8 @@ window.onload = () => {
 
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key.startsWith('sk-ant')) {
-    alert('请输入正确的 Anthropic API Key（以 sk-ant 开头）');
+  if (!key) {
+    alert('请输入 API Key');
     return;
   }
   apiKey = key;
