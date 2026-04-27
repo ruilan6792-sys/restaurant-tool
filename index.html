@@ -1112,10 +1112,16 @@ function doRegister() {
   allUsers[user] = { pass, contact, createdAt: new Date().toLocaleString() };
   localStorage.setItem('lumina_users', JSON.stringify(allUsers));
 
-  // Auto login
-  apiKey = BACKEND_API_KEY;
-  localStorage.setItem('lumina_user', user);
-  document.getElementById('apiModal').style.display = 'none';
+  // Show success and switch to login
+  err.style.color = 'var(--gold)';
+  err.textContent = '✓ 注册成功！请登录';
+  err.style.display = 'block';
+  setTimeout(() => {
+    switchTab('login');
+    document.getElementById('loginUser').value = user;
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }, 1200);
 }
 
 // Init
