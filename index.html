@@ -169,6 +169,17 @@ header {
   background: rgba(201,169,110,0.05);
 }
 
+.quick-btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201,169,110,0.12);
+  box-shadow: inset 0 0 0 1px rgba(201,169,110,0.3);
+}
+
+.quick-btn.active .icon {
+  opacity: 1;
+}
+
 .quick-btn .icon {
   font-size: 14px;
   opacity: 0.7;
@@ -876,12 +887,12 @@ textarea::placeholder { color: var(--text-dim); }
         <div class="welcome-title">您好，<em>欢迎使用</em> LUMINA</div>
         <div class="welcome-sub">专为高端体验型商家打造的 AI 内容创作助手</div>
         <div class="welcome-cards">
-          <div class="welcome-card" onclick="quickPrompt('', 'brand')">
+          <div class="welcome-card" onclick="quickPrompt('', 'brand', this)">
             <div class="welcome-card-icon">✦</div>
             <div class="welcome-card-title">品牌故事</div>
             <div class="welcome-card-desc">打造有温度、有底蕴的品牌叙事</div>
           </div>
-          <div class="welcome-card" onclick="quickPrompt('', 'camp')">
+          <div class="welcome-card" onclick="quickPrompt('', 'camp', this)">
             <div class="welcome-card-icon">◈</div>
             <div class="welcome-card-title">场景文案</div>
             <div class="welcome-card-desc">餐厅、露营、民宿的沉浸式描述</div>
@@ -1057,8 +1068,11 @@ function removeImage() {
 
 let currentRole = '';
 
-function quickPrompt(text, role = '') {
+function quickPrompt(text, role = '', el = null) {
   currentRole = role;
+  // Highlight active button
+  document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
   // Hide welcome, show empty chat ready for input
   const w = document.getElementById('welcome');
   if (w) w.style.display = 'none';
